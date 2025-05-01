@@ -1,4 +1,5 @@
 using System.Text;
+using Bookstore.Api.Mappings;
 using Bookstore.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -19,6 +20,9 @@ public class Startup
     {
         services.AddControllers();
 
+        // Automapper implementation
+        services.AddAutoMapper(typeof(MappingProfile));
+        
         // CORS implementation
         services.AddCors(options =>
         {

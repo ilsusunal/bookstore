@@ -1,3 +1,4 @@
+using AutoMapper;
 using Bookstore.Api.Models.Books;
 using Bookstore.Domain.Entities;
 using Bookstore.Infrastructure;
@@ -11,10 +12,12 @@ namespace Bookstore.Api.Controllers;
 public class BookController : ControllerBase
 {
     private readonly BookstoreDbContext _context;
+    private readonly IMapper _mapper;
 
-    public BookController(BookstoreDbContext context)
+    public BookController(BookstoreDbContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
 
     // GET: api/book
@@ -24,21 +27,10 @@ public class BookController : ControllerBase
         var books = await _context.Books
             .Include(b => b.Author)
             .Include(b => b.Genre)
-            .Select(b => new BookDto
-            {
-                Id = b.Id,
-                Title = b.Title,
-                ISBN = b.ISBN!,
-                Description = b.Description,
-                Price = b.Price,
-                PageCount = b.PageCount,
-                PublishedDate = b.PublishedDate,
-                AuthorName = b.Author.Name,
-                GenreName = b.Genre.Name
-            })
             .ToListAsync();
 
-        return Ok(books);
+        var bookDtos = _mapper.Map<List<BookDto>>(books);
+        return Ok(bookDtos);
     }
 
     // GET: api/book/5
@@ -48,43 +40,20 @@ public class BookController : ControllerBase
         var book = await _context.Books
             .Include(b => b.Author)
             .Include(b => b.Genre)
-            .Where(b => b.Id == id)
-            .Select(b => new BookDto
-            {
-                Id = b.Id,
-                Title = b.Title,
-                ISBN = b.ISBN!,
-                Description = b.Description,
-                Price = b.Price,
-                PageCount = b.PageCount,
-                PublishedDate = b.PublishedDate,
-                AuthorName = b.Author.Name,
-                GenreName = b.Genre.Name
-            })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(b => b.Id == id);
 
         if (book == null)
             return NotFound();
 
-        return Ok(book);
+        var bookDto = _mapper.Map<BookDto>(book);
+        return Ok(bookDto);
     }
 
     // POST: api/book
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreateBookRequest request)
     {
-        var book = new Book
-        {
-            Title = request.Title,
-            ISBN = request.ISBN,
-            Description = request.Description,
-            Price = request.Price,
-            PageCount = request.PageCount,
-            PublishedDate = request.PublishedDate,
-            AuthorId = request.AuthorId,
-            GenreId = request.GenreId,
-            Stock = request.Stock
-        };
+        var book = _mapper.Map<Book>(request);
 
         await _context.Books.AddAsync(book);
         await _context.SaveChangesAsync();
@@ -100,17 +69,9 @@ public class BookController : ControllerBase
         if (book == null)
             return NotFound();
 
-        book.Title = request.Title;
-        book.ISBN = request.ISBN;
-        book.Description = request.Description;
-        book.Price = request.Price;
-        book.PageCount = request.PageCount;
-        book.PublishedDate = request.PublishedDate;
-        book.AuthorId = request.AuthorId;
-        book.GenreId = request.GenreId;
-        book.Stock = request.Stock;
-
+        _mapper.Map(request, book); // mevcut entity'ye request'i uygula
         await _context.SaveChangesAsync();
+
         return NoContent();
     }
 
