@@ -21,7 +21,8 @@ public class Startup
         services.AddControllers();
 
         // Automapper implementation
-        services.AddAutoMapper(typeof(MappingProfile));
+        services.AddAutoMapper(typeof(MappingProfile).Assembly);
+
         
         // CORS implementation
         services.AddCors(options =>
