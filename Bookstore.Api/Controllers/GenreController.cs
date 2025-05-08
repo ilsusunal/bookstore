@@ -9,18 +9,18 @@ namespace Bookstore.Api.Controllers
     [Route("api/[controller]")]
     public class GenreController : ControllerBase
     {
-        private readonly BookstoreDbContext _context;
+        private readonly IGenreService _genreService;
 
-        public GenreController(BookstoreDbContext context)
-        {
-            _context = context;
-        }
-
+	public GenreController(IGenreService genreService)
+	{
+    		_genreService = genreService;
+	}
         // GET: api/genre
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Genre>>> GetGenres()
         {
-            return await _context.Genres.Include(g => g.Books).ToListAsync();
+                var genres = await _genreService.GetAllAsync();
+    		return Ok(genres);
         }
 
         // GET: api/genre/5

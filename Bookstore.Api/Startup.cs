@@ -49,6 +49,8 @@ public class Startup
                 Version = "v1"
             });
         });
+	services.AddScoped<IGenreService, GenreService>();
+
     }
 
     // HTTP Request Pipeline will be managed here
